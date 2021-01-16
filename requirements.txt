@@ -5,6 +5,3 @@ wtforms
 email.validator
 passlib
 psycopg2
-secrets
-copy
-sys
