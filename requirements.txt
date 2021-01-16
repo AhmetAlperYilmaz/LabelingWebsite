@@ -1,0 +1,10 @@
+Flask~=1.1
+flask_bootstrap
+flask_wtf
+wtforms
+email.validator
+passlib
+psycopg2
+secrets
+copy
+sys
