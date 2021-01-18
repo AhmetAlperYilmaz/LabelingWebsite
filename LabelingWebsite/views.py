@@ -102,7 +102,7 @@ def profile():
 def deleting_db():
     with dbapi2.connect(database=db_name, user=db_user, password=db_pass, host=HOST, port=DB_PORT) as conn:
         with conn.cursor() as cursor:
-            query = """DROP TABLE IF EXISTS USERS, USER_INFO, USER_STATS CASCADE"""
+            query = """DROP TABLE IF EXISTS USERS, USER_INFO, USER_STATS, LABEL_CATEGORIES, IMAGES, IMAGE_STATS CASCADE"""
             cursor.execute(query)
             conn.commit()
 
@@ -128,7 +128,6 @@ def initializing_db():
 	                    SURNAME character varying(64) DEFAULT NULL,
                         PRIMARY KEY (EMAIL),
                         UNIQUE (EMAIL),
-                        CONSTRAINT USERNAME
 	                    FOREIGN KEY (USERNAME)
                         REFERENCES USERS(USERNAME) ON DELETE CASCADE
                     );"""
@@ -136,14 +135,50 @@ def initializing_db():
             query = """CREATE TABLE USER_STATS
                     (
                         USERNAME character varying(64) NOT NULL,
-	                    UPLOADED_COUNT INTEGER,
-                        LABELED_COUNT INTEGER,
-	                    DOWNLOADED_COUNT INTEGER,
+	                    UPLOADED_COUNT INTEGER DEFAULT 0,
+                        LABELED_COUNT INTEGER DEFAULT 0,
+	                    DOWNLOADED_COUNT INTEGER DEFAULT 0,
                         PRIMARY KEY (USERNAME),
 	                    FOREIGN KEY (USERNAME)
                         REFERENCES USERS(USERNAME) ON DELETE CASCADE
                     );"""
             cursor.execute(query)
+            query = """CREATE TABLE LABEL_CATEGORIES
+                    (
+                        LABELED_AS character varying(255) NOT NULL,
+	                    TOTAL_COUNT INTEGER,
+                        TOTAL_DOWNLOAD INTEGER,
+                        PRIMARY KEY (LABELED_AS),
+                        UNIQUE(LABELED_AS)
+                    );"""
+            cursor.execute(query)
+            query = """CREATE TABLE IMAGES
+                    (
+                        IMAGE_ID INTEGER NOT NULL,
+	                    IMAGE_PATH character varying(255) NOT NULL,
+                        HEIGHT INT NOT NULL,
+	                    WIDTH INT NOT NULL,
+                        USERNAME character varying(64) NOT NULL,
+                        PRIMARY KEY (IMAGE_ID),
+                        UNIQUE (IMAGE_ID),
+	                    FOREIGN KEY (USERNAME)
+                        REFERENCES USERS(USERNAME) ON DELETE CASCADE
+                    );"""
+            cursor.execute(query)
+            query = """CREATE TABLE IMAGE_STATS
+                    (
+                        IMAGE_ID INTEGER NOT NULL,
+	                    TOTAL_COUNT_LABEL INTEGER DEFAULT 0,
+                        TOTAL_COUNT_DOWNLOAD INTEGER DEFAULT 0,
+                        LABELED_AS character varying(255) NOT NULL,
+                        PRIMARY KEY (IMAGE_ID),
+	                    FOREIGN KEY (IMAGE_ID)
+                        REFERENCES IMAGES(IMAGE_ID) ON DELETE CASCADE,
+                        FOREIGN KEY (LABELED_AS)
+                        REFERENCES LABEL_CATEGORIES(LABELED_AS) ON DELETE CASCADE
+                    );"""
+            cursor.execute(query)
+            
             conn.commit()
 
     return redirect(url_for('index'))

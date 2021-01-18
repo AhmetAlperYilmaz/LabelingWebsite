@@ -30,6 +30,27 @@ class USER_STATS:
         self.downloaded_count = downloaded_count
         self.uploaded_count= uploaded_count
 
+class LABEL_CATEGORIES:
+    def __init__(self, labeled_as, total_count, total_download):
+        self.labeled_as = labeled_as
+        self.total_count = total_count
+        self.total_download = total_download
+
+class IMAGES:
+    def __init__(self, image_id, image_path, height, width, username):
+        self.image_id = image_id
+        self.image_path = image_path
+        self.height = height
+        self.width = width
+        self.username = username
+
+class IMAGE_STATS:
+    def __init__(self, image_id, total_count_label, total_count_download, labeled_as):
+        self.image_id = image_id
+        self.total_count_label = total_count_label
+        self.total_count_download = total_count_download
+        self.labeled_as = labeled_as
+
 class Database:
     def __init__(self):
         self.users = []
