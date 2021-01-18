@@ -7,7 +7,7 @@ from LabelingWebsite import app
 from Settings import PORT, HOST, DEBUG
 from dbinit import initialize
 
-HEROKU = False
+HEROKU = True
 
 if(not HEROKU):
     os.environ['DATABASE_URL'] =  "dbname='LabelingDB' user='postgres' host='localhost' password='KingHarlaus26'"
@@ -15,6 +15,6 @@ if(not HEROKU):
 
 if __name__ == '__main__':
     if(not HEROKU):
-        app.run(HOST, PORT, debug = DEBUG)
+        app.run(debug = DEBUG)
     else:
         app.run()
