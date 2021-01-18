@@ -56,17 +56,15 @@ class Database:
             return "fail"
 
     def add_user_stats(self, the_username):
-        #try:
+        try:
             with dbapi2.connect(database=db_name, user=db_user, password=db_pass, host=HOST, port=DB_PORT) as conn:
                 with conn.cursor() as cursor:
-                    print("t54")
-                    statement = """INSERT INTO USER_STATS (USERNAME, UPLOADED_COUNT, LABELED_COUNT, DOWNLOADED_COUNT) VALUES (%s, 0, 0, 0);""" % (the_username,)
-                    print("fgıghıg")
-                    cursor.execute(statement)
-                    print("fgfg")
+                    statement = """INSERT INTO USER_STATS (USERNAME, UPLOADED_COUNT, LABELED_COUNT, DOWNLOADED_COUNT) VALUES (%s, 0, 0, 0);"""
+                    data = (the_username,)
+                    cursor.execute(statement, data)
             return "success"
-        #except Exception:
-            #return "fail"
+        except Exception:
+            return "fail"
 
     def get_user(self, the_username):
         statement = """SELECT * FROM USERS WHERE USERNAME = '%s';""" % (the_username,)

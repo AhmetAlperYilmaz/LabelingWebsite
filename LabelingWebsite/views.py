@@ -75,8 +75,7 @@ def signup():
         if user is None and email is None:
             result = db.add_user(str(form.username.data), hash_password)
             result_2 = db.add_user_info(str(form.email.data),str(form.username.data),str(form.name.data),str(form.surname.data))
-            #result_3 = db.add_user_stats(str(form.username.data))
-            #print(result_3)
+            result_3 = db.add_user_stats(str(form.username.data))
             if result == "success" and result_2 == "success":
                 flash(f'Account is successfully created for the username: {form.username.data}','success')
                 return redirect(url_for('login'))
