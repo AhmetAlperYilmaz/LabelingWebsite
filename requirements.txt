@@ -6,3 +6,4 @@ email.validator
 passlib
 psycopg2
 gunicorn
+flask_login
