@@ -10,6 +10,7 @@ from passlib.hash import pbkdf2_sha256 as hasher
 from database import Database, USERS
 from psycopg2 import extensions
 import os
+from werkzeug.utils import secure_filename
 
 extensions.register_type(extensions.UNICODE)
 extensions.register_type(extensions.UNICODEARRAY)
@@ -34,6 +35,11 @@ class RegisterForm(FlaskForm):
     email = StringField('Email', validators=[InputRequired(), Email(message='Invalid email'), Length(max=64)])
     username = StringField('Username', validators=[InputRequired(), Length(min=1, max=64)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=64)])
+
+class ImageForm(FlaskForm):
+    height = StringField('Enter the image height', validators=[Length(max=4)])
+    width = StringField('Enter the image width', validators=[Length(max=4)])
+    #label = StringField('Enter the image label (optional)', validators=[Length(max=64)])
 
 @app.route('/')
 def index():
@@ -101,17 +107,50 @@ def profile():
     a_user_stats = db.get_user_stats(current_user.username)
     return render_template('profile.html', title='Profile Page', your_info=a_user_info, your_stats=a_user_stats)
 
-#app.config["IMAGE_UPLOADS"] = "C://Users//alper//Desktop//VStudioDatabase//LabelingWebsite//LabelingWebsite//static//img//uploads"
+app.config["IMAGE_UPLOADS"] = "C://Users//alper//Desktop//VStudioDatabase//LabelingWebsite//LabelingWebsite//static//img//uploads"
+app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["PNG","JPG","JPEG","GIF"]
+#app.config["MAX_IMAGE_FILESIZE"] = 1024 * 1024
 
-#@app.route('/label', methods=['GET', 'POST'])
-#def label():
-#    if request.method == "POST":
-#        if request.files:
-#            image = request.files["image"]
-#            print(image)
-#            return redirect(request.url)
-#
-#    return render_template('label.html', title='Label Page')
+def allowed_image(filename):
+    if not "." in filename:
+        return False
+
+    ext = filename.rsplit(".", 1)[1]
+
+    if ext.upper() in app.config["ALLOWED_IMAGE_EXTENSIONS"]:
+        return True
+    else:
+        return False
+
+#def allowed_image_filesize(filesize):
+#    if filesize <= app.config["MAX_IMAGE_FILESIZE"]:
+#        return True
+#    else:
+#        return False
+
+@login_required
+@app.route('/label', methods=['GET', 'POST'])
+def label():
+    if request.method == "POST":
+        #if not allowed_image_filesize(request.get("filesize")):
+            #flash(f'File exceeded filesize limit', 'danger')
+            #return redirect(request.url)
+        
+        if request.files:
+            image = request.files["image"]
+            if image.filename == "":
+                flash(f'Image must have a filename', 'danger')
+                return redirect(request.url)
+            if not allowed_image(image.filename):
+                flash(f'Image extension is not allowed', 'danger')
+                return redirect(request.url)
+            else:
+                filename = secure_filename(image.filename)
+                image.save(os.path.join(app.config["IMAGE_UPLOADS"], filename))
+            flash(f'Image has been saved', 'success')
+            return redirect(request.url)
+
+    return render_template('label.html', title='Label Page')
 
 @app.route('/del')
 def deleting_db():
@@ -170,7 +209,6 @@ def initializing_db():
             query = """CREATE TABLE IMAGES
                     (
                         IMAGE_ID INTEGER NOT NULL,
-	                    IMAGE_PATH character varying(255) NOT NULL,
                         HEIGHT INT NOT NULL,
 	                    WIDTH INT NOT NULL,
                         USERNAME character varying(64) NOT NULL,

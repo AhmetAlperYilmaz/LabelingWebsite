@@ -37,9 +37,8 @@ class LABEL_CATEGORIES:
         self.total_download = total_download
 
 class IMAGES:
-    def __init__(self, image_id, image_path, height, width, username):
+    def __init__(self, image_id, height, width, username):
         self.image_id = image_id
-        self.image_path = image_path
         self.height = height
         self.width = width
         self.username = username
@@ -97,12 +96,12 @@ class Database:
         except Exception:
             return "fail"
 
-    def add_image(self, image_id, image_path, height, width, username):
+    def add_image(self, image_id, height, width, username):
         try:
             with dbapi2.connect(database=db_name, user=db_user, password=db_pass, host=HOST, port=DB_PORT) as conn:
                 with conn.cursor() as cursor:
-                    statement = """INSERT INTO IMAGES (IMAGE_ID, IMAGE_PATH, HEIGHT, WIDTH, USERNAME) VALUES (%d, %s, %s, %s, %s)"""
-                    data = (image_id, image_path, height, width, username)
+                    statement = """INSERT INTO IMAGES (IMAGE_ID, HEIGHT, WIDTH, USERNAME) VALUES (%d, %s, %s, %s)"""
+                    data = (image_id, height, width, username)
                     cursor.execute(statement, data)
             return "success"
         except Exception:
@@ -179,7 +178,7 @@ class Database:
                 images = cursor.fetchall()
                 if images is not None:
                     for row in images:
-                        images = IMAGES(row[0], row[1], row[2], row[3], row[4])
+                        images = IMAGES(row[0], row[1], row[2], row[3])
                         return images
                 else:
                     return None

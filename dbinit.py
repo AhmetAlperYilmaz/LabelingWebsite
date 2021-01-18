@@ -43,7 +43,6 @@ INIT_STATEMENTS = [
     """CREATE TABLE if not exists IMAGES
     (
     IMAGE_ID INTEGER NOT NULL,
-	IMAGE_PATH character varying(255) NOT NULL,
     HEIGHT INT NOT NULL,
 	WIDTH INT NOT NULL,
     USERNAME character varying(64) NOT NULL,
