@@ -8,6 +8,10 @@ from Settings import db_name, db_user, db_pass, HOST, PORT, DB_PORT
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from passlib.hash import pbkdf2_sha256 as hasher
 from database import Database, USERS
+from psycopg2 import extensions
+
+extensions.register_type(extensions.UNICODE)
+extensions.register_type(extensions.UNICODEARRAY)
 
 db = Database()
 

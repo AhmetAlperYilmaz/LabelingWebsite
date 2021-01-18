@@ -1,10 +1,20 @@
 """
 This script runs the LabelingWebsite application using a development server.
 """
-
+import os
 from os import environ
 from LabelingWebsite import app
 from Settings import PORT, HOST, DEBUG
+from dbinit import initialize
+
+HEROKU = False
+
+if(not HEROKU):
+    os.environ['DATABASE_URL'] =  "dbname='LabelingDB' user='postgres' host='localhost' password='KingHarlaus26'"
+    initialize(os.environ.get('DATABASE_URL'))
 
 if __name__ == '__main__':
-    app.run(HOST, PORT, debug = DEBUG)
+    if(not HEROKU):
+        app.run(HOST, PORT, debug = DEBUG)
+    else:
+        app.run()
