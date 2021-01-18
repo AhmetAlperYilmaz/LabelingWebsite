@@ -76,7 +76,7 @@ def initialize(url):
 
 
 if __name__ == "__main__":
-    url = "dbname='LabelingDB' user='postgres' host='localhost' password='KingHarlaus26'"
+    url = os.getenv("DATABASE_URL")
     if url is None:
         print("Usage: DATABASE_URL=url python dbinit.py", file=sys.stderr)
         sys.exit(1)
