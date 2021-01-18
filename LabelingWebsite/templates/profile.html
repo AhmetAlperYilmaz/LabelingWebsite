@@ -15,4 +15,26 @@ Profile Page
 <br />
 <h1> THIS IS YOUR PROFILE PAGE {{ current_user.username }}</h1>
 <br />
+<h2> YOUR ACCOUNT INFOS ARE BELOW </h2>
+{% if your_info %}
+<div>
+    <ul>
+        <li>E-mail : {{ your_info.email }}</li>
+        <li>Name : {% if your_info.name %}{{ your_info.name }}{% endif %}</li>
+        <li>Surname : {% if your_info.surname%}{{ your_info.surname }}{% endif %}</li>
+    </ul>
+</div>
+{% endif %}
+<br />
+<br />
+<h2> YOUR ACCOUNT STATS ARE BELOW </h2>
+{% if your_stats %}
+<div>
+    <ul>
+        <li>Labeled Count : {{ your_stats.labeled_count }}</li>
+        <li>Downloaded Count : {{ your_stats.downloaded_count }}</li>
+        <li>Uploaded Count : {{ your_stats.uploaded_count }}</li>
+    </ul>
+</div>
+{% endif %}
 {% endblock %}

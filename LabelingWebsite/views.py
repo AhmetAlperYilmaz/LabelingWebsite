@@ -96,7 +96,10 @@ def signup():
 @app.route('/profile')
 @login_required
 def profile():
-    return render_template('profile.html', title='Profile Page')
+    print(current_user.username)
+    a_user_info = db.get_user_info(current_user.username)
+    a_user_stats = db.get_user_stats(current_user.username)
+    return render_template('profile.html', title='Profile Page', your_info=a_user_info, your_stats=a_user_stats)
 
 @app.route('/del')
 def deleting_db():
