@@ -15,6 +15,6 @@ if(not HEROKU):
 
 if __name__ == '__main__':
     if(not HEROKU):
-        app.run(debug = DEBUG)
+        app.run(HOST, PORT, debug = DEBUG)
     else:
         app.run()

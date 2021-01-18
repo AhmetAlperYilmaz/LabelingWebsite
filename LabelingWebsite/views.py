@@ -101,17 +101,17 @@ def profile():
     a_user_stats = db.get_user_stats(current_user.username)
     return render_template('profile.html', title='Profile Page', your_info=a_user_info, your_stats=a_user_stats)
 
-app.config["IMAGE_UPLOADS"] = "C://Users//alper//Desktop//VStudioDatabase//LabelingWebsite//LabelingWebsite//static//img//uploads"
+#app.config["IMAGE_UPLOADS"] = "C://Users//alper//Desktop//VStudioDatabase//LabelingWebsite//LabelingWebsite//static//img//uploads"
 
-@app.route('/label', methods=['GET', 'POST'])
-def label():
-    if request.method == "POST":
-        if request.files:
-            image = request.files["image"]
-            print(image)
-            return redirect(request.url)
-
-    return render_template('label.html', title='Label Page')
+#@app.route('/label', methods=['GET', 'POST'])
+#def label():
+#    if request.method == "POST":
+#        if request.files:
+#            image = request.files["image"]
+#            print(image)
+#            return redirect(request.url)
+#
+#    return render_template('label.html', title='Label Page')
 
 @app.route('/del')
 def deleting_db():
