@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}
+Upload Images
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='starter-template.css')}}">
+{% endblock %}
+
+{% block content %}
+<br />
+<br />
+<h1> YOU CAN UPLOAD YOUR IMAGES AND LABEL IMAGES FROM BELOW</h1>
+
+<form action="/upload" method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+        <label>Upload an image</label>
+        <div class="custom-file">
+            <input oninput="filesize(this);" type="file" class="custom-file-input" name="image" id="image">
+            <label class="custom-file-label" for="image">Select image...</label>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Upload</button>
+</form>
+<br/>
+<br/>
+<div class="container">
+    <button type="submit"><a href="{{ url_for('label') }}">Label your Image</a></button>
+</div>
+{% endblock %}

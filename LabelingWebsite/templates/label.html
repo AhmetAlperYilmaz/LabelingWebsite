@@ -2,7 +2,7 @@
 {% import "bootstrap/wtf.html" as wtf %}
 
 {% block title %}
-Label and Upload Images
+Label Images
 {% endblock %}
 
 {% block styles %}
@@ -11,19 +11,14 @@ Label and Upload Images
 {% endblock %}
 
 {% block content %}
-<br />
-<br />
-<h1> YOU CAN UPLOAD YOUR IMAGES AND LABEL IMAGES FROM HERE</h1>
-
-<form action="/label" method="POST" enctype="multipart/form-data">
-    <div class="form-group">
-        <label>Upload an image</label>
-        <div class="custom-file">
-            <input oninput="filesize(this);" type="file" class="custom-file-input" name="image" id="image">
-            <label class="custom-file-label" for="image">Select image...</label>
-        </div>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Upload</button>
+<br/>
+<br/>
+<form class="form-signin" method="POST" action="/label">
+        <h2 class="form-signin-heading">Label your image</h2>
+        {{ image.hidden_tag() }}
+        {{ wtf.form_field(image.height) }}
+        {{ wtf.form_field(image.width) }}
+        {{ wtf.form_field(image.label)}}
+        <button class="btn btn-lg btn-primary" type="submit">Attempt to Label</button>
 </form>
 {% endblock %}

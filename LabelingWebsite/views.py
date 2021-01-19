@@ -40,9 +40,9 @@ class RegisterForm(FlaskForm):
     show_password = BooleanField('Show password', id='check')
 
 class ImageForm(FlaskForm):
-    height = StringField('Enter the image height', validators=[Length(max=4)])
-    width = StringField('Enter the image width', validators=[Length(max=4)])
-    label = StringField('Enter the image label (optional)', validators=[Length(max=255)])
+    height = StringField('Enter the image pixel height', validators=[Length(max=4)])
+    width = StringField('Enter the image pixel width', validators=[Length(max=4)])
+    label = StringField('Enter the image label', validators=[Length(max=255)])
 
 class UpdateForm(FlaskForm):
     oldpassword = PasswordField('Old Password', validators=[InputRequired(), Length(min=8, max=64)], id='password1')
@@ -113,7 +113,7 @@ def signup():
             result = db.add_user(str(form.username.data), hash_password)
             result_2 = db.add_user_info(str(form.email.data),str(form.username.data),str(form.name.data),str(form.surname.data))
             result_3 = db.add_user_stats(str(form.username.data))
-            if result == "success" and result_2 == "success":
+            if result == "success" and result_2 == "success" and result_3 == "success":
                 flash(f'Account is successfully created for the username: {form.username.data}','success')
                 return redirect(url_for('login'))
             else:
@@ -252,9 +252,11 @@ def allowed_image(filename):
     else:
         return False
 
-@app.route('/label', methods=['GET', 'POST'])
+@app.route('/upload', methods=['GET', 'POST'])
 @login_required
-def label():
+def upload():
+    if not current_user.is_authenticated:
+        return redirect("/")
     if request.method == "POST":  
         if request.files:
             image = request.files["image"]
@@ -270,8 +272,26 @@ def label():
             flash(f'Image has been saved', 'success')
             return redirect(request.url)
 
-    return render_template('label.html', title='Label Page')
+    return render_template('upload.html', title='Upload Page')
 
+@app.route('/label', methods=['GET', 'POST'])
+@login_required
+def label():
+    if not current_user.is_authenticated:
+        return redirect("/")
+    image = ImageForm()
+    if image.validate_on_submit():
+        result1 = db.add_image(int(image.height.data), int(image.width.data), current_user.username)
+        result2 = db.add_label_category(str(image.label.data))
+        result3 = db.add_image_stats(str(image.label.data))
+        if result1 == "success" and result2 == "success" and result3 == "success":
+            flash(f'Image is added successfully: {image.label.data}','success')
+            return redirect(url_for('label'))
+        else:
+            flash(f'Failed to add your image please try again.', 'danger')
+
+    return render_template('label.html', title='Label Page', image = image)
+    
 @app.route('/del')
 def deleting_db():
     url = os.getenv("DATABASE_URL")
@@ -331,8 +351,8 @@ def initializing_db():
             query = """CREATE TABLE IMAGES
                     (
                         IMAGE_ID INTEGER NOT NULL,
-                        HEIGHT INT NOT NULL,
-	                    WIDTH INT NOT NULL,
+                        HEIGHT INTEGER NOT NULL,
+	                    WIDTH INTEGER NOT NULL,
                         USERNAME character varying(64) NOT NULL,
                         PRIMARY KEY (IMAGE_ID),
                         UNIQUE (IMAGE_ID),

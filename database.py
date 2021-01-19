@@ -94,33 +94,36 @@ class Database:
             url = os.getenv("DATABASE_URL")
             with dbapi2.connect(url) as conn:
                 with conn.cursor() as cursor:
-                    statement = """INSERT INTO LABEL_CATEGORIES (LABELED_AS, TOTAL_COUNT, TOTAL_DOWNLOAD) VALUES (%s, 0, 0);"""
+                    statement = """INSERT INTO LABEL_CATEGORIES (LABELED_AS, TOTAL_COUNT, TOTAL_DOWNLOAD) VALUES (%s, 1, 0);"""
                     data = (labeled_as,)
                     cursor.execute(statement, data)
             return "success"
         except Exception:
             return "fail"
 
-    def add_image(self, image_id, height, width, username):
+    def add_image(self, height, width, username):
         try:
+            self.last_image_id += 1
             url = os.getenv("DATABASE_URL")
             with dbapi2.connect(url) as conn:
                 with conn.cursor() as cursor:
-                    statement = """INSERT INTO IMAGES (IMAGE_ID, HEIGHT, WIDTH, USERNAME) VALUES (%d, %s, %s, %s)"""
-                    data = (image_id, height, width, username)
+                    statement = """INSERT INTO IMAGES (IMAGE_ID, HEIGHT, WIDTH, USERNAME) VALUES (%s, %s, %s, %s)"""
+                    data = (self.last_image_id, height, width, username)
                     cursor.execute(statement, data)
             return "success"
         except Exception:
             return "fail"
 
-    def add_image_stats(self, image_id, total_count_label, total_count_download, labeled_as):
+    def add_image_stats(self, labeled_as):
         try:
             url = os.getenv("DATABASE_URL")
             with dbapi2.connect(url) as conn:
                 with conn.cursor() as cursor:
-                    statement = """INSERT INTO IMAGE_STATS (IMAGE_ID, TOTAL_COUNT_LABEL, TOTAL_COUNT_DOWNLOAD, LABELED_AS) VALUES (%d, 0, 0, %s)"""
-                    data = (image_id, labeled_as)
+                    statement = """INSERT INTO IMAGE_STATS (IMAGE_ID, TOTAL_COUNT_LABEL, TOTAL_COUNT_DOWNLOAD, LABELED_AS) VALUES (%s, 0, 0, %s)"""
+                    print("wa233r")
+                    data = (self.last_image_id,labeled_as,)
                     cursor.execute(statement, data)
+                    print("war")
             return "success"
         except Exception:
             return "fail"
