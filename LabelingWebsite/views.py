@@ -357,7 +357,7 @@ def initializing_db():
                         PRIMARY KEY (IMAGE_ID),
                         UNIQUE (IMAGE_ID),
 	                    FOREIGN KEY (USERNAME)
-                        REFERENCES USERS(USERNAME) ON DELETE CASCADE
+                        REFERENCES USERS(USERNAME) ON UPDATE CASCADE ON DELETE CASCADE
                     );"""
             cursor.execute(query)
             query = """CREATE TABLE IMAGE_STATS
@@ -368,9 +368,9 @@ def initializing_db():
                         LABELED_AS character varying(255) NOT NULL,
                         PRIMARY KEY (IMAGE_ID),
 	                    FOREIGN KEY (IMAGE_ID)
-                        REFERENCES IMAGES(IMAGE_ID) ON DELETE CASCADE,
+                        REFERENCES IMAGES(IMAGE_ID) ON UPDATE CASCADE ON DELETE CASCADE,
                         FOREIGN KEY (LABELED_AS)
-                        REFERENCES LABEL_CATEGORIES(LABELED_AS) ON DELETE CASCADE
+                        REFERENCES LABEL_CATEGORIES(LABELED_AS) ON UPDATE CASCADE ON DELETE CASCADE
                     );"""
             cursor.execute(query)
             
