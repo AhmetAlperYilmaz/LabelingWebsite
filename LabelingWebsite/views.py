@@ -25,7 +25,8 @@ def load_user(the_user):
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=1, max=64)])
-    password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=64)])
+    password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=64)], id='password')
+    show_password = BooleanField('Show password', id='check')
     remember = BooleanField('Remember Me')
     #“Remember Me” prevents the user from accidentally being logged out when they close their browser. 
     #This does NOT mean remembering or pre-filling the user’s username or password in a login form after the user has logged out.
@@ -35,7 +36,8 @@ class RegisterForm(FlaskForm):
     surname = StringField('Surname', validators=[Length(max=64)])
     email = StringField('Email', validators=[InputRequired(), Email(message='Invalid email'), Length(max=64)])
     username = StringField('Username', validators=[InputRequired(), Length(min=1, max=64)])
-    password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=64)])
+    password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=64)], id='password')
+    show_password = BooleanField('Show password', id='check')
 
 class ImageForm(FlaskForm):
     height = StringField('Enter the image height', validators=[Length(max=4)])
@@ -43,9 +45,12 @@ class ImageForm(FlaskForm):
     label = StringField('Enter the image label (optional)', validators=[Length(max=255)])
 
 class UpdateForm(FlaskForm):
-    oldpassword = PasswordField('Old Password', validators=[InputRequired(), Length(min=8, max=64)])
-    newpassword = PasswordField('New Password', validators=[InputRequired(), Length(min=8, max=64)])
-    confirm = PasswordField('Confirm New Password', validators=[InputRequired(), Length(min=8, max=64)])
+    oldpassword = PasswordField('Old Password', validators=[InputRequired(), Length(min=8, max=64)], id='password1')
+    show_password1 = BooleanField('Show password', id='check1')
+    newpassword = PasswordField('New Password', validators=[InputRequired(), Length(min=8, max=64)], id='password2')
+    show_password2 = BooleanField('Show password', id='check2')
+    confirm = PasswordField('Confirm New Password', validators=[InputRequired(), Length(min=8, max=64)], id='password3')
+    show_password3 = BooleanField('Show password', id='check3')
 
 class UpdateInfo(FlaskForm):
     name = StringField('New Name', validators=[Length(max=64)])

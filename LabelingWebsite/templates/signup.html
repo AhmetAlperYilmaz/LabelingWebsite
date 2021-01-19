@@ -22,8 +22,26 @@ Register
         {{ wtf.form_field(form.name) }}
         {{ wtf.form_field(form.surname) }}
         {{ wtf.form_field(form.password) }}
+        {{ wtf.form_field(form.show_password)}}
         <button class="btn btn-lg btn-primary" type="submit">Sign Up</button>
     </form>
 
 </div> <!-- /container -->
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.addEventListener("load", function(){
+    var checkbox  = document.getElementById('{{form.show_password.id}}');
+    var x = document.getElementById('{{form.password.id}}');
+    checkbox.addEventListener('change', function() {
+        if(this.checked) {
+            x.type = 'text'; 
+        } else {
+            x.type = 'password'; 
+        }
+    });
+});
+</script>
+
 {% endblock %}
