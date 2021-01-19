@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}
+Update Your Stats
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='signin.css')}}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <form class="form-signin" method="POST" action="/update-stats">
+        <h2 class="form-signin-heading">Change your stats</h2>
+        {{ update.hidden_tag() }}
+        {{ wtf.form_field(update.label) }}
+        {{ wtf.form_field(update.upload) }}
+        {{ wtf.form_field(update.download) }}
+        <button class="btn btn-lg btn-primary" type="submit">Attempt to change</button>
+    </form>
+
+</div> <!-- /container -->
+{% endblock %}

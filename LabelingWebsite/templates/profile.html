@@ -32,16 +32,17 @@ Profile Page
 <div>
     <ul>
         <li>Labeled Count : {{ your_stats.labeled_count }}</li>
-        <li>Downloaded Count : {{ your_stats.downloaded_count }}</li>
         <li>Uploaded Count : {{ your_stats.uploaded_count }}</li>
+        <li>Downloaded Count : {{ your_stats.downloaded_count }}</li>
     </ul>
 </div>
 <br />
 <br />
 <div class="container">
     <button type="submit"><a href="{{ url_for('update_profile') }}">Change Password</a></button>
-    <button type="submit"><a href="{{ url_for('update_info') }}">Edit Your Personal Info</a></button>
-    <button type="submit"><a href="{{ url_for('profile') }}">Label and Upload</a></button>
+    <button type="submit"><a href="{{ url_for('update_info') }}">Change Your Personal Info</a></button>
+    <button type="submit"><a href="{{ url_for('update_stats') }}">Update Your Stats</a></button>
+    <button type="submit"><a href="{{ url_for('delete_profile') }}">Delete Your Account</a></button>
 </div>
 {% endif %}
 {% endblock %}

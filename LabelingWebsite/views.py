@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, request, jsonify, make_response
 from LabelingWebsite import app
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField
+from wtforms import StringField, PasswordField, BooleanField, IntegerField
 from wtforms.validators import InputRequired, Email, Length
 import psycopg2 as dbapi2
 from Settings import db_name, db_user, db_pass, HOST, PORT, DB_PORT
@@ -54,6 +54,11 @@ class UpdateInfo(FlaskForm):
     email = StringField('New Email', validators=[InputRequired(), Email(message='Invalid email'), Length(max=64)])
     confirm = PasswordField('Confirm Your Changes with Password', validators=[InputRequired(), Length(min=8, max=64)])
 
+class UpdateStats(FlaskForm):
+    label = StringField('New Labeled Count', validators=[Length(max=10)])
+    upload = StringField('New Uploaded Count', validators=[Length(max=10)])
+    download = StringField('New Downloaded Count', validators=[Length(max=10)])
+
 @app.route('/')
 def index():
     return render_template('index.html', title='Home Page')
@@ -79,8 +84,8 @@ def login():
                 flash('Failed to login, please try again','danger')
     return render_template('login.html', title='Login', form = form)
 
-@login_required
 @app.route("/logout")
+@login_required
 def logout():
     if not current_user.is_authenticated:
         flash('You have not logged in. You cannot log out', 'danger')
@@ -123,8 +128,8 @@ def profile():
     a_user_stats = db.get_user_stats(current_user.username)
     return render_template('profile.html', title='Profile Page', your_info=a_user_info, your_stats=a_user_stats)
 
-@login_required
 @app.route("/update-password", methods=['GET','POST'])
+@login_required
 def update_profile():
     if not current_user.is_authenticated:
         return redirect("/")
@@ -187,6 +192,47 @@ def update_info():
             return redirect("/update-info")
     return render_template("update-info.html", title = "Update Info", update = update)
 
+@app.route('/update-stats', methods=['GET', 'POST'])
+@login_required
+def update_stats():
+    if not current_user.is_authenticated:
+        return redirect("/")
+
+    update = UpdateStats()
+
+    if update.validate_on_submit():
+        user_stats = db.get_user_stats(current_user.username)
+        if user_stats is not None:
+            url = os.getenv("DATABASE_URL")
+            with dbapi2.connect(url) as connection:
+                with connection.cursor() as cursor:
+                    statement = """UPDATE USER_STATS SET LABELED_COUNT = '%d' WHERE USERNAME = '%s'""" % (int(update.label.data), current_user.username)
+                    cursor.execute(statement)
+                    statement = """UPDATE USER_STATS SET UPLOADED_COUNT = '%d' WHERE USERNAME = '%s'""" % (int(update.upload.data), current_user.username)
+                    cursor.execute(statement)
+                    statement = """UPDATE USER_STATS SET DOWNLOADED_COUNT = '%d' WHERE USERNAME = '%s'""" % (int(update.download.data), current_user.username)
+                    cursor.execute(statement)
+                    connection.commit()
+                    flash(f"Your stats has changed successfully.",'success')
+                    return redirect("/profile")
+        else:
+            flash(f"An error occured while changing your stats.",'danger')
+            return redirect("/profile")
+    return render_template("update-stats.html", title = "Update your Stats", update = update)
+
+@app.route('/delete-profile', methods=['GET', 'POST'])
+@login_required
+def delete_profile():
+    user = db.get_user(current_user.username)
+    url = os.getenv("DATABASE_URL")
+    with dbapi2.connect(url) as connection:
+        with connection.cursor() as cursor:
+            statement = """DELETE FROM USERS WHERE USERNAME = '%s'""" % (current_user.username,)
+            cursor.execute(statement)
+            logout_user()
+            flash(f"Your account has deleted successfully.",'success')
+            return redirect("/")  
+
 app.config["IMAGE_UPLOADS"] = "C://Users//alper//Desktop//VStudioDatabase//LabelingWebsite//LabelingWebsite//static//img//uploads"
 app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["PNG","JPG","JPEG","GIF"]
 
@@ -201,8 +247,8 @@ def allowed_image(filename):
     else:
         return False
 
-@login_required
 @app.route('/label', methods=['GET', 'POST'])
+@login_required
 def label():
     if request.method == "POST":  
         if request.files:

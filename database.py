@@ -25,7 +25,7 @@ class USER_INFO:
         self.surname = surname
 
 class USER_STATS:
-    def __init__(self, username, labeled_count, downloaded_count, uploaded_count):
+    def __init__(self, username, uploaded_count, labeled_count, downloaded_count):
         self.username = username
         self.labeled_count = labeled_count
         self.downloaded_count = downloaded_count
