@@ -16,7 +16,6 @@ extensions.register_type(extensions.UNICODE)
 extensions.register_type(extensions.UNICODEARRAY)
 
 db = Database()
-
 lm = LoginManager(app)
 lm.login_view = 'login'
 
@@ -28,6 +27,8 @@ class LoginForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=1, max=64)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=64)])
     remember = BooleanField('Remember Me')
+    #“Remember Me” prevents the user from accidentally being logged out when they close their browser. 
+    #This does NOT mean remembering or pre-filling the user’s username or password in a login form after the user has logged out.
 
 class RegisterForm(FlaskForm):
     name = StringField('Name', validators=[Length(max=64)])
@@ -39,7 +40,19 @@ class RegisterForm(FlaskForm):
 class ImageForm(FlaskForm):
     height = StringField('Enter the image height', validators=[Length(max=4)])
     width = StringField('Enter the image width', validators=[Length(max=4)])
-    #label = StringField('Enter the image label (optional)', validators=[Length(max=64)])
+    label = StringField('Enter the image label (optional)', validators=[Length(max=255)])
+
+class UpdateForm(FlaskForm):
+    oldpassword = PasswordField('Old Password', validators=[InputRequired(), Length(min=8, max=64)])
+    newpassword = PasswordField('New Password', validators=[InputRequired(), Length(min=8, max=64)])
+    confirm = PasswordField('Confirm New Password', validators=[InputRequired(), Length(min=8, max=64)])
+
+class UpdateInfo(FlaskForm):
+    name = StringField('New Name', validators=[Length(max=64)])
+    surname = StringField('New Surname', validators=[Length(max=64)])
+    username = StringField('New Username', validators=[InputRequired(), Length(min=1, max=64)])
+    email = StringField('New Email', validators=[InputRequired(), Email(message='Invalid email'), Length(max=64)])
+    confirm = PasswordField('Confirm Your Changes with Password', validators=[InputRequired(), Length(min=8, max=64)])
 
 @app.route('/')
 def index():
@@ -56,7 +69,10 @@ def login():
         if user is not None:
             the_password = user.password
             if hasher.verify(str(form.password.data), the_password):
-                login_user(user, remember = form.remember.data)
+                if(form.remember.data):
+                    login_user(user, remember = True)
+                else:
+                    login_user(user, remember = False)
                 flash(f'Login is successful. Welcome {form.username.data}', 'success')
                 return render_template('index.html', title='Home Page')
             else:
@@ -107,9 +123,72 @@ def profile():
     a_user_stats = db.get_user_stats(current_user.username)
     return render_template('profile.html', title='Profile Page', your_info=a_user_info, your_stats=a_user_stats)
 
+@login_required
+@app.route("/update-password", methods=['GET','POST'])
+def update_profile():
+    if not current_user.is_authenticated:
+        return redirect("/")
+    update = UpdateForm()
+    if update.validate_on_submit():
+        if str(update.newpassword.data) != str(update.confirm.data):
+            flash(f"New passwords don't match. Try again.",'danger')
+            return redirect("/update-password")
+        user = db.get_user(current_user.username)
+        if hasher.verify(str(update.oldpassword.data), user.password):
+            new = hasher.hash(str(update.newpassword.data))
+            statement = """UPDATE USERS SET PASSWORD = '%s' WHERE USERNAME = '%s'""" % (new, current_user.username)
+            url = os.getenv("DATABASE_URL")
+            with dbapi2.connect(url) as connection:
+                with connection.cursor() as cursor:
+                    cursor.execute(statement)
+                    connection.commit()
+                    flash(f"Your password has changed successfully.",'success')
+                    logout_user()
+                    return redirect("/login")
+        else:
+            flash(f"The old password you entered is incorrect. Try again.",'danger')
+            return redirect("/update-password")
+    return render_template("update-password.html", title = "Change Password", update = update)
+
+@app.route('/update-info', methods=['GET', 'POST'])
+@login_required
+def update_info():
+    if not current_user.is_authenticated:
+        return redirect("/")
+    update = UpdateInfo()
+    if update.validate_on_submit():
+        user_info_by_email = db.get_email(str(update.email.data))
+        if user_info_by_email is not None:
+            flash(f"This email is already taken. Please try another email.",'danger')
+            return redirect("/update-info")
+        user = db.get_user(str(update.username.data))
+        if user is not None:
+            flash(f"This username is already taken. Please try another username.",'danger')
+            return redirect("/update-info")
+        user_info = db.get_user_info(current_user.username)
+        user_2 = db.get_user(current_user.username)
+        if(hasher.verify(str(update.confirm.data), user_2.password)):
+            url = os.getenv("DATABASE_URL")
+            with dbapi2.connect(url) as connection:
+                with connection.cursor() as cursor:
+                    statement = """UPDATE USER_INFO SET NAME = '%s' WHERE EMAIL = '%s'""" % (str(update.name.data), user_info.email)
+                    cursor.execute(statement)
+                    statement = """UPDATE USER_INFO SET SURNAME = '%s' WHERE EMAIL = '%s'""" % (str(update.surname.data), user_info.email)
+                    cursor.execute(statement)
+                    statement = """UPDATE USERS SET USERNAME = '%s' WHERE USERNAME = '%s'""" % (str(update.username.data), user_2.username)
+                    cursor.execute(statement)
+                    statement = """UPDATE USER_INFO SET EMAIL = '%s' WHERE EMAIL = '%s'""" % (str(update.email.data), user_info.email)
+                    cursor.execute(statement)
+                    connection.commit()
+                    flash(f"Your info has changed successfully.",'success')#done
+                    return redirect("/profile")  
+        else:
+            flash(f"The password you entered is incorrect. Try again.",'danger')
+            return redirect("/update-info")
+    return render_template("update-info.html", title = "Update Info", update = update)
+
 app.config["IMAGE_UPLOADS"] = "C://Users//alper//Desktop//VStudioDatabase//LabelingWebsite//LabelingWebsite//static//img//uploads"
 app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["PNG","JPG","JPEG","GIF"]
-#app.config["MAX_IMAGE_FILESIZE"] = 1024 * 1024
 
 def allowed_image(filename):
     if not "." in filename:
@@ -122,20 +201,10 @@ def allowed_image(filename):
     else:
         return False
 
-#def allowed_image_filesize(filesize):
-#    if filesize <= app.config["MAX_IMAGE_FILESIZE"]:
-#        return True
-#    else:
-#        return False
-
 @login_required
 @app.route('/label', methods=['GET', 'POST'])
 def label():
-    if request.method == "POST":
-        #if not allowed_image_filesize(request.get("filesize")):
-            #flash(f'File exceeded filesize limit', 'danger')
-            #return redirect(request.url)
-        
+    if request.method == "POST":  
         if request.files:
             image = request.files["image"]
             if image.filename == "":
@@ -154,7 +223,8 @@ def label():
 
 @app.route('/del')
 def deleting_db():
-    with dbapi2.connect(database=db_name, user=db_user, password=db_pass, host=HOST, port=DB_PORT) as conn:
+    url = os.getenv("DATABASE_URL")
+    with dbapi2.connect(url) as conn:
         with conn.cursor() as cursor:
             query = """DROP TABLE IF EXISTS USERS, USER_INFO, USER_STATS, LABEL_CATEGORIES, IMAGES, IMAGE_STATS CASCADE"""
             cursor.execute(query)
@@ -164,7 +234,8 @@ def deleting_db():
 
 @app.route('/ini')
 def initializing_db():
-    with dbapi2.connect(database=db_name, user=db_user, password=db_pass, host=HOST, port=DB_PORT) as conn:
+    url = os.getenv("DATABASE_URL")
+    with dbapi2.connect(url) as conn:
         with conn.cursor() as cursor:
             query = """CREATE TABLE USERS
                     (
@@ -183,7 +254,7 @@ def initializing_db():
                         PRIMARY KEY (EMAIL),
                         UNIQUE (EMAIL),
 	                    FOREIGN KEY (USERNAME)
-                        REFERENCES USERS(USERNAME) ON DELETE CASCADE
+                        REFERENCES USERS(USERNAME) ON UPDATE CASCADE ON DELETE CASCADE
                     );"""
             cursor.execute(query)
             query = """CREATE TABLE USER_STATS
@@ -194,7 +265,7 @@ def initializing_db():
 	                    DOWNLOADED_COUNT INTEGER DEFAULT 0,
                         PRIMARY KEY (USERNAME),
 	                    FOREIGN KEY (USERNAME)
-                        REFERENCES USERS(USERNAME) ON DELETE CASCADE
+                        REFERENCES USERS(USERNAME)  ON UPDATE CASCADE ON DELETE CASCADE
                     );"""
             cursor.execute(query)
             query = """CREATE TABLE LABEL_CATEGORIES

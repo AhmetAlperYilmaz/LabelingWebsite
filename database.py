@@ -1,6 +1,7 @@
 import psycopg2 as dbapi2
 from Settings import db_name, db_user, db_pass, HOST, PORT, DB_PORT
 from flask_login import UserMixin
+import os
 
 class USERS(UserMixin):
     def __init__(self, username, password):
@@ -56,7 +57,8 @@ class Database:
 
     def add_user(self, username, password):
         try:
-            with dbapi2.connect(database=db_name, user=db_user, password=db_pass, host=HOST, port=DB_PORT) as conn:
+            url = os.getenv("DATABASE_URL")
+            with dbapi2.connect(url) as conn:
                 with conn.cursor() as cursor:
                     statement = """INSERT INTO USERS (USERNAME, PASSWORD) VALUES (%s, %s)"""
                     cursor.execute(statement, (username, password))
@@ -66,7 +68,8 @@ class Database:
 
     def add_user_info(self, email, username, name, surname):
         try:
-            with dbapi2.connect(database=db_name, user=db_user, password=db_pass, host=HOST, port=DB_PORT) as conn:
+            url = os.getenv("DATABASE_URL")
+            with dbapi2.connect(url) as conn:
                 with conn.cursor() as cursor:
                     statement = """INSERT INTO USER_INFO (EMAIL, USERNAME, NAME, SURNAME) VALUES (%s, %s, %s, %s)"""
                     cursor.execute(statement, (email, username, name, surname))
@@ -76,7 +79,8 @@ class Database:
 
     def add_user_stats(self, the_username):
         try:
-            with dbapi2.connect(database=db_name, user=db_user, password=db_pass, host=HOST, port=DB_PORT) as conn:
+            url = os.getenv("DATABASE_URL")
+            with dbapi2.connect(url) as conn:
                 with conn.cursor() as cursor:
                     statement = """INSERT INTO USER_STATS (USERNAME, UPLOADED_COUNT, LABELED_COUNT, DOWNLOADED_COUNT) VALUES (%s, 0, 0, 0);"""
                     data = (the_username,)
@@ -87,7 +91,8 @@ class Database:
     
     def add_label_category(self, labeled_as):
         try:
-            with dbapi2.connect(database=db_name, user=db_user, password=db_pass, host=HOST, port=DB_PORT) as conn:
+            url = os.getenv("DATABASE_URL")
+            with dbapi2.connect(url) as conn:
                 with conn.cursor() as cursor:
                     statement = """INSERT INTO LABEL_CATEGORIES (LABELED_AS, TOTAL_COUNT, TOTAL_DOWNLOAD) VALUES (%s, 0, 0);"""
                     data = (labeled_as,)
@@ -98,7 +103,8 @@ class Database:
 
     def add_image(self, image_id, height, width, username):
         try:
-            with dbapi2.connect(database=db_name, user=db_user, password=db_pass, host=HOST, port=DB_PORT) as conn:
+            url = os.getenv("DATABASE_URL")
+            with dbapi2.connect(url) as conn:
                 with conn.cursor() as cursor:
                     statement = """INSERT INTO IMAGES (IMAGE_ID, HEIGHT, WIDTH, USERNAME) VALUES (%d, %s, %s, %s)"""
                     data = (image_id, height, width, username)
@@ -109,7 +115,8 @@ class Database:
 
     def add_image_stats(self, image_id, total_count_label, total_count_download, labeled_as):
         try:
-            with dbapi2.connect(database=db_name, user=db_user, password=db_pass, host=HOST, port=DB_PORT) as conn:
+            url = os.getenv("DATABASE_URL")
+            with dbapi2.connect(url) as conn:
                 with conn.cursor() as cursor:
                     statement = """INSERT INTO IMAGE_STATS (IMAGE_ID, TOTAL_COUNT_LABEL, TOTAL_COUNT_DOWNLOAD, LABELED_AS) VALUES (%d, 0, 0, %s)"""
                     data = (image_id, labeled_as)
@@ -120,7 +127,8 @@ class Database:
 
     def get_user(self, the_username):
         statement = """SELECT * FROM USERS WHERE USERNAME = '%s';""" % (the_username,)
-        with dbapi2.connect(database=db_name, user=db_user, password=db_pass, host=HOST, port=DB_PORT) as conn:
+        url = os.getenv("DATABASE_URL")
+        with dbapi2.connect(url) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(statement)
                 user = cursor.fetchall()
@@ -133,7 +141,8 @@ class Database:
 
     def get_user_info(self, the_username):
         statement = """SELECT * FROM USER_INFO WHERE USERNAME = '%s';""" % (the_username,)
-        with dbapi2.connect(database=db_name, user=db_user, password=db_pass, host=HOST, port=DB_PORT) as conn:
+        url = os.getenv("DATABASE_URL")
+        with dbapi2.connect(url) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(statement)
                 user_info = cursor.fetchall()
@@ -145,8 +154,9 @@ class Database:
                     return None
 
     def get_email(self, the_email):
+        url = os.getenv("DATABASE_URL")
         statement = """SELECT * FROM USER_INFO WHERE EMAIL = '%s';""" % (the_email,)
-        with dbapi2.connect(database=db_name, user=db_user, password=db_pass, host=HOST, port=DB_PORT) as conn:
+        with dbapi2.connect(url) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(statement)
                 user_info = cursor.fetchall()
@@ -159,7 +169,8 @@ class Database:
     
     def get_user_stats(self, the_username):
         statement = """SELECT * FROM USER_STATS WHERE USERNAME = '%s';""" % (the_username,)
-        with dbapi2.connect(database=db_name, user=db_user, password=db_pass, host=HOST, port=DB_PORT) as conn:
+        url = os.getenv("DATABASE_URL")
+        with dbapi2.connect(url) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(statement)
                 user_stats = cursor.fetchall()
@@ -172,7 +183,8 @@ class Database:
     
     def get_image(self, image_id):
         statement = """SELECT * FROM IMAGES WHERE IMAGE_ID = '%d';""" % (image_id,)
-        with dbapi2.connect(database=db_name, user=db_user, password=db_pass, host=HOST, port=DB_PORT) as conn:
+        url = os.getenv("DATABASE_URL")
+        with dbapi2.connect(url) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(statement)
                 images = cursor.fetchall()
@@ -184,8 +196,9 @@ class Database:
                     return None
 
     def get_label_category(self, labeled_as):
+        url = os.getenv("DATABASE_URL")
         statement = """SELECT * FROM LABEL_CATEGORIES WHERE LABELED_AS = '%s';""" % (labeled_as,)
-        with dbapi2.connect(database=db_name, user=db_user, password=db_pass, host=HOST, port=DB_PORT) as conn:
+        with dbapi2.connect(url) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(statement)
                 category = cursor.fetchall()
@@ -198,7 +211,8 @@ class Database:
 
     def get_image_stats(self, image_id):
         statement = """SELECT * FROM IMAGE_STATS WHERE IMAGE_ID = '%d';""" % (image_id,)
-        with dbapi2.connect(database=db_name, user=db_user, password=db_pass, host=HOST, port=DB_PORT) as conn:
+        url = os.getenv("DATABASE_URL")
+        with dbapi2.connect(url) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(statement)
                 image_stats = cursor.fetchall()
